@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import { forkJoin } from 'rxjs';
 import {
   MovieDto, ActorDto, DirectorDto, HallDto, SeatDto, ScreeningDto, BookingDto,
   Genre, GenreLabels, AudioLanguage, AudioLanguageLabels,
@@ -44,6 +45,32 @@ type TabType = 'movies' | 'actors' | 'directors' | 'halls' | 'seats' | 'screenin
                   <div class="form-group"><label>Titlu</label><input class="form-control" [(ngModel)]="mf.title"></div>
                   <div class="form-group"><label>Durată (min)</label><input type="number" class="form-control" [(ngModel)]="mf.durationMinutes"></div>
                   <div class="form-group"><label>Restricție vârstă</label><input type="number" class="form-control" [(ngModel)]="mf.ageRestriction"></div>
+                  <div class="form-group">
+                    <label>Regizori</label>
+                    <div class="checkbox-scroll">
+                      @for (d of directors; track d.id) {
+                        <label class="check-label">
+                          <input type="checkbox"
+                                 [checked]="mf.directorIds?.includes(d.id)"
+                                 (change)="toggleDirectorId(d.id!)">
+                          {{ d.name }}
+                        </label>
+                      }
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label>Actori</label>
+                    <div class="checkbox-scroll">
+                      @for (a of actors; track a.id) {
+                        <label class="check-label">
+                          <input type="checkbox"
+                                 [checked]="mf.actorIds?.includes(a.id)"
+                                 (change)="toggleActorId(a.id!)">
+                          {{ a.name }}
+                        </label>
+                      }
+                    </div>
+                  </div>
                   <div class="form-group">
                     <label>Gen</label>
                     <select class="form-control" [(ngModel)]="mf.genre">
@@ -338,12 +365,12 @@ type TabType = 'movies' | 'actors' | 'directors' | 'halls' | 'seats' | 'screenin
             </div>
             <div class="table-container">
               <table>
-                <thead><tr><th>ID</th><th>User ID</th><th>Proiecție</th><th>Locuri</th><th>Preț</th><th>Data</th><th>Acțiuni</th></tr></thead>
+                <thead><tr><th>ID</th><th>User Email</th><th>Proiecție</th><th>Locuri</th><th>Preț</th><th>Data</th><th>Acțiuni</th></tr></thead>
                 <tbody>
                   @for (b of bookings; track b.id) {
                     <tr>
                       <td>{{ b.id }}</td>
-                      <td>{{ b.userId }}</td>
+                      <td>{{ userEmailMap[b.userId] }}</td>
                       <td>{{ b.screeningId }}</td>
                       <td>{{ b.seatIds?.join(', ') }}</td>
                       <td>{{ b.totalPrice }} MDL</td>
@@ -421,6 +448,22 @@ type TabType = 'movies' | 'actors' | 'directors' | 'halls' | 'seats' | 'screenin
       gap: 6px;
     }
 
+    .checkbox-scroll {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 160px;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      background: var(--bg-input, var(--bg-card));
+    }
+
+    .checkbox-scroll .check-label {
+      flex-shrink: 0;
+    }
+    
     @media (max-width: 768px) {
       .form-grid { grid-template-columns: 1fr; }
     }
@@ -479,18 +522,25 @@ export class AdminComponent implements OnInit {
   langKeys = Object.keys(AudioLanguage);
   langLabels = AudioLanguageLabels;
 
+  userEmailMap: Record<number, string> = {};
+
   constructor(private api: ApiService) {}
 
   ngOnInit() { this.loadAll(); }
 
   loadAll() {
-    this.api.getMovies(0, 100).subscribe(r => this.movies = r);
-    this.api.getActors().subscribe(r => this.actors = r);
-    this.api.getDirectors().subscribe(r => this.directors = r);
-    this.api.getHalls().subscribe(r => this.halls = r);
-    this.api.getSeats(0, 500).subscribe(r => this.seats = r);
-    this.api.getScreenings().subscribe(r => this.screenings = r);
-    this.api.getBookings().subscribe(r => this.bookings = r);
+    this.api.getMovies(0, 1000).subscribe(r => this.movies = r);
+    this.api.getActors(0, 1000).subscribe(r => this.actors = r);
+    this.api.getDirectors(0, 1000).subscribe(r => this.directors = r);
+    this.api.getHalls(0, 1000).subscribe(r => this.halls = r);
+    // this.api.getSeats(0, 500).subscribe(r => this.seats = r);
+    this.api.getScreenings(0, 1000).subscribe(r => this.screenings = r);
+    this.api.getBookings(0, 1000).subscribe(r => {
+      this.bookings = r;
+      console.log("bookings: ", this.bookings);
+      this.loadUserEmails();
+      console.log("userEmailMap: ", this.userEmailMap);
+    });
   }
 
   switchTab(tab: TabType) { this.activeTab = tab; }
@@ -503,7 +553,12 @@ export class AdminComponent implements OnInit {
 
   editMovie(m: MovieDto) {
     this.editingMovie = m;
-    this.mf = { ...m, audioLanguages: [...(m.audioLanguages || [])] };
+    this.mf = {
+      ...m,
+      audioLanguages: [...(m.audioLanguages || [])],
+      directorIds: [...(m.directorIds || [])],
+      actorIds: [...(m.actorIds || [])],
+    };
     this.showMovieForm = true;
   }
 
@@ -659,4 +714,39 @@ export class AdminComponent implements OnInit {
     const pad = (n: number) => String(n).padStart(2, '0');
     return `${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())}T${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
   }
+
+  toggleDirectorId(id: number) {
+    const idx = this.mf.directorIds.indexOf(id);
+    if (idx >= 0) this.mf.directorIds.splice(idx, 1);
+    else this.mf.directorIds.push(id);
+  }
+
+  toggleActorId(id: number) {
+    const idx = this.mf.actorIds.indexOf(id);
+    if (idx >= 0) this.mf.actorIds.splice(idx, 1);
+    else this.mf.actorIds.push(id);
+  }
+
+  loadUserEmails() {
+    if (!this.bookings || this.bookings.length === 0) return;
+
+    const userIds = [...new Set(this.bookings.map(s => s.userId))];
+
+    console.log("userIds: ", userIds)
+
+    const calls = userIds.map(id => this.api.getUserEmailById(id));
+
+    if (calls.length === 0) return;
+
+    forkJoin(calls).subscribe({
+      next: (emails: string[]) => {
+        userIds.forEach((id, index) => {
+          this.userEmailMap[id] = emails[index];
+        });
+        console.log('userEmailMap populated:', this.userEmailMap);
+      },
+      error: (err) => console.error('Eroare la încărcarea emailurilor', err)
+    });
+  }
+
 }

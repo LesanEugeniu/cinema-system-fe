@@ -207,4 +207,9 @@ export class ApiService {
   deleteBooking(id: number): Observable<void> {
     return this.http.delete<void>(`${this.api}/bookings/${id}`);
   }
+
+  getUserEmailById(id: number): Observable<string> {
+    return this.http.get(`${this.api}/users/${id}`, { responseType: 'text' });
+  }
+
 }
