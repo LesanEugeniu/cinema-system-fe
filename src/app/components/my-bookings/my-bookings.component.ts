@@ -84,12 +84,12 @@ interface BookingView {
                     }
                     <div class="detail-item">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><rect x="4" y="5" width="16" height="16" rx="1"/><path d="M4 9h16"/></svg>
-                      <span>{{ bv.booking.seatIds?.length || 0 }} locuri</span>
+                      <span>{{ bv?.booking?.seatIds?.length || 0 }} locuri</span>
                     </div>
                   </div>
 
                   <div class="booking-price">
-                    <span class="price-value">{{ bv.booking.totalPrice?.toFixed(2) }} MDL</span>
+                    <span class="price-value">{{ bv?.booking?.totalPrice?.toFixed(2) }} MDL</span>
                   </div>
                 </div>
 

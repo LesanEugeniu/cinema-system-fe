@@ -1,0 +1,106 @@
+<div class="page">
+    <div class="container">
+        <!-- Hero Banner -->
+        <div class="hero-banner animate-in">
+            <div class="hero-content">
+                <h1 class="page-title">FILME</h1>
+                <p class="page-subtitle">Descoperă cele mai recente filme în cinematograful nostru</p>
+            </div>
+            <div class="hero-glow"></div>
+        </div>
+
+        <!-- Search Banner -->
+        <div class="search-banner animate-in" style="animation-delay: 0.1s">
+            <div class="search-header">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8" />
+                    <path d="m21 21-4.3-4.3" />
+                </svg>
+                <span>Filtrează filme</span>
+                @if (hasActiveFilters()) {
+                <button class="clear-filters" (click)="clearFilters()">✕ Șterge filtre</button>
+                }
+            </div>
+            <div class="search-filters">
+                <div class="filter-group">
+                    <label>Actor</label>
+                    <select class="form-control" [(ngModel)]="selectedActorId" (change)="onSearch()">
+                        <option [ngValue]="null">Toți actorii</option>
+                        @for (actor of actors; track actor.id) {
+                        <option [ngValue]="actor.id">{{ actor.name }}</option>
+                        }
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Director</label>
+                    <select class="form-control" [(ngModel)]="selectedDirectorId" (change)="onSearch()">
+                        <option [ngValue]="null">Toți directorii</option>
+                        @for (director of directors; track director.id) {
+                        <option [ngValue]="director.id">{{ director.name }}</option>
+                        }
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Sunet</label>
+                    <select class="form-control" [(ngModel)]="selectedSound" (change)="onSearch()">
+                        <option [ngValue]="null">Orice sunet</option>
+                        <option value="MONO">Mono</option>
+                        <option value="STEREO">Stereo</option>
+                        <option value="SURROUND">Surround</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Format</label>
+                    <select class="form-control" [(ngModel)]="selectedFormat" (change)="onSearch()">
+                        <option [ngValue]="null">Orice format</option>
+                        @for (f of formatKeys; track f) {
+                        <option [value]="f">{{ formatLabels[f] }}</option>
+                        }
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Limba</label>
+                    <select class="form-control" [(ngModel)]="selectedLang" (change)="onSearch()">
+                        <option [ngValue]="null">Orice limbă</option>
+                        @for (l of langKeys; track l) {
+                        <option [value]="l">{{ langLabels[l] }}</option>
+                        }
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Gen</label>
+                    <select class="form-control" [(ngModel)]="selectedGenre" (change)="onSearch()">
+                        <option [ngValue]="null">Orice gen</option>
+                        @for (g of genreKeys; track g) {
+                        <option [value]="g">{{ genreLabels[g] }}</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Movies Grid -->
+        @if (loading) {
+        <div class="loading-container">
+            <div class="spinner"></div>
+        </div>
+        } @else if (movies.length === 0) {
+        <div class="empty-state animate-in">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5">
+                <rect x="2" y="2" width="20" height="20" rx="2.18" />
+                <line x1="7" y1="2" x2="7" y2="22" />
+                <line x1="17" y1="2" x2="17" y2="22" />
+                <line x1="2" y1="12" x2="22" y2="12" />
+            </svg>
+            <h3>Nu s-au găsit filme</h3>
+            <p>Încearcă să modifici filtrele de căutare</p>
+        </div>
+        } @else {
+        <div class="movies-grid">
+            @for (movie of movies; track movie.id; let i = $index) {
+                <app-movie-card [movie]="movie" [index]="i" ></app-movie-card>
+            }
+        </div>
+        }
+    </div>
+</div>

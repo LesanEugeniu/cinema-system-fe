@@ -372,7 +372,7 @@ type TabType = 'movies' | 'actors' | 'directors' | 'halls' | 'seats' | 'screenin
                       <td>{{ b.id }}</td>
                       <td>{{ userEmailMap[b.userId] }}</td>
                       <td>{{ b.screeningId }}</td>
-                      <td>{{ b.seatIds?.join(', ') }}</td>
+                      <td>{{ b?.seatIds?.join(', ') }}</td>
                       <td>{{ b.totalPrice }} MDL</td>
                       <td>{{ formatDateTime(b.bookingDate) }}</td>
                       <td class="actions-cell">
@@ -529,7 +529,7 @@ export class AdminComponent implements OnInit {
   ngOnInit() { this.loadAll(); }
 
   loadAll() {
-    this.api.getMovies(0, 1000).subscribe(r => this.movies = r);
+    this.api.getMovies(0).subscribe(r => this.movies = r);
     this.api.getActors(0, 1000).subscribe(r => this.actors = r);
     this.api.getDirectors(0, 1000).subscribe(r => this.directors = r);
     this.api.getHalls(0, 1000).subscribe(r => this.halls = r);
@@ -577,12 +577,12 @@ export class AdminComponent implements OnInit {
     if (this.editingMovie) {
       this.api.updateMovie(this.editingMovie.id!, dto, this.movieImage || undefined).subscribe(() => {
         this.showMovieForm = false;
-        this.api.getMovies(0, 100).subscribe(r => this.movies = r);
+        this.api.getMovies(0).subscribe(r => this.movies = r);
       });
     } else {
       this.api.createMovie(dto, this.movieImage || undefined).subscribe(() => {
         this.showMovieForm = false;
-        this.api.getMovies(0, 100).subscribe(r => this.movies = r);
+        this.api.getMovies(0).subscribe(r => this.movies = r);
       });
     }
   }

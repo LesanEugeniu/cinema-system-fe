@@ -11,12 +11,13 @@ import {
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private readonly api = environment.apiUrl;
+  private readonly pagination = environment.pagination;
 
   constructor(private http: HttpClient) {}
 
   // ===== MOVIES =====
-  getMovies(page = 0, size = 50): Observable<MovieDto[]> {
-    const params = new HttpParams().set('page', page).set('size', size);
+  getMovies(page = 0): Observable<MovieDto[]> {
+    const params = new HttpParams().set('page', page).set('size', this.pagination);
     return this.http.get<MovieDto[]>(`${this.api}/movies`, { params });
   }
 
@@ -51,7 +52,7 @@ export class ApiService {
     return this.http.delete<void>(`${this.api}/movies/${id}`);
   }
 
-  getMovieImageUrl(imagePath: string): string {
+  getMovieImageUrl(imagePath: string | undefined): string {
     if (!imagePath) return '';
     const filename = imagePath.split('/').pop();
     return `${this.api}/movies/image/${filename}`;

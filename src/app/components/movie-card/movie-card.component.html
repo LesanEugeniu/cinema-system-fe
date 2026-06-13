@@ -1,0 +1,37 @@
+<a [routerLink]="['/movies', movie().id]" class="movie-card animate-in" [style.animation-delay]="(index() * 0.05) + 's'">
+    <div class="movie-poster">
+        @if (movie().imagePath) {
+        <img [src]="movieImagePath()" [alt]="movie().title" loading="lazy">
+        } @else {
+        <div class="poster-placeholder">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="2" y="2" width="20" height="20" rx="2.18" />
+                <line x1="7" y1="2" x2="7" y2="22" />
+                <line x1="17" y1="2" x2="17" y2="22" />
+            </svg>
+        </div>
+        }
+        <div class="poster-overlay">
+            <span class="play-icon">▶</span>
+        </div>
+        <div class="movie-badges">
+            <span class="badge badge-accent">{{ formatLabels[movie().formatType] || movie().formatType }}</span>
+            @if (movie().ageRestriction) {
+            <span class="badge badge-info">{{ movie().ageRestriction }}+</span>
+            }
+        </div>
+    </div>
+    <div class="movie-info">
+        <h3 class="movie-title">{{ movie().title }}</h3>
+        <div class="movie-meta">
+            <span>{{ genreLabels[movie().genre] || movie().genre }}</span>
+            <span class="dot">·</span>
+            <span>{{ movie().durationMinutes }} min</span>
+        </div>
+        <div class="movie-langs">
+            @for (lang of movie().audioLanguages; track lang) {
+            <span class="lang-tag">{{ langLabels[lang] || lang }}</span>
+            }
+        </div>
+    </div>
+</a>
