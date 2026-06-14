@@ -36,6 +36,8 @@ export class MoviesComponent implements OnInit {
   formatKeys = Object.keys(FormatType);
   formatLabels = FormatTypeLabels;
   page: number = 0;
+  lastPage: number = Number.MAX_VALUE;
+  isFetchingMovies: boolean = false;
 
   constructor(public api: ApiService) { }
 
@@ -94,11 +96,19 @@ export class MoviesComponent implements OnInit {
 
   @HostListener('window:scroll')
   onWindowScroll() {
-    if ((window.innerHeight + window.scrollY + 150) >= document.body.offsetHeight) {
+    if ((window.innerHeight + window.scrollY + 150) >= document.body.offsetHeight
+      && this.page < this.lastPage && !this.isFetchingMovies) {
+      console.log(">>>getMovies")
+      this.isFetchingMovies = true;
       this.page++;
 
       this.api.getMovies(this.page).subscribe({
-        next: movies => { this.movies.push(...movies); }
+        next: movies => {
+          this.movies.push(...movies);
+          if (movies.length === 0) this.lastPage = this.page;
+          this.isFetchingMovies = false;
+        },
+        error: () => this.isFetchingMovies = false
       });
     }
   }

@@ -1,0 +1,141 @@
+<div class="page">
+    <div class="container">
+        <div class="hero-banner animate-in">
+            <h1 class="page-title">REZERVĂRILE MELE</h1>
+            <p class="page-subtitle">Istoric bilete și descărcare PDF</p>
+        </div>
+
+        @if (loading) {
+        <div class="loading-container">
+            <div class="spinner"></div>
+        </div>
+        } @else if (bookingViews.length === 0) {
+        <div class="empty-state animate-in">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5">
+                <path
+                    d="M15 5v2M9 5v2M4 11h16M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7z" />
+                <path d="M9 16h6" />
+            </svg>
+            <h3>Nicio rezervare</h3>
+            <p>Nu ai nicio rezervare încă. Mergi la <a routerLink="/schedule">Program</a> pentru a rezerva bilete.</p>
+        </div>
+        } @else {
+        <div class="bookings-list">
+            @for (bv of bookingViews; track bv.booking.id; let i = $index) {
+            <div class="booking-card animate-in" [style.animation-delay]="(i * 0.06) + 's'">
+                <!-- Poster -->
+                <div class="booking-poster">
+                    @if (bv.movie?.imagePath) {
+                    <img [src]="api.getMovieImageUrl(bv.movie!.imagePath!)" [alt]="bv.movie!.title">
+                    } @else {
+                    <div class="poster-placeholder">
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.5">
+                            <rect x="2" y="2" width="20" height="20" rx="2" />
+                        </svg>
+                    </div>
+                    }
+                </div>
+
+                <!-- Info -->
+                <div class="booking-info">
+                    <div class="booking-top">
+                        <h3 class="booking-movie-title">{{ bv.movie?.title || 'Film #' + bv.booking.screeningId }}</h3>
+                        <div class="booking-meta">
+                            @if (bv.movie) {
+                            <span class="badge badge-accent">{{ formatLabels[bv.movie.formatType] || bv.movie.formatType
+                                }}</span>
+                            <span>{{ genreLabels[bv.movie.genre] || bv.movie.genre }}</span>
+                            <span class="dot">·</span>
+                            <span>{{ bv.movie.durationMinutes }} min</span>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="booking-details">
+                        <div class="detail-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)"
+                                stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2" />
+                                <line x1="16" y1="2" x2="16" y2="6" />
+                                <line x1="8" y1="2" x2="8" y2="6" />
+                                <line x1="3" y1="10" x2="21" y2="10" />
+                            </svg>
+                            <span>{{ formatDate(bv.screening?.startTime || bv.booking.bookingDate) }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)"
+                                stroke-width="2">
+                                <circle cx="12" cy="12" r="10" />
+                                <polyline points="12 6 12 12 16 14" />
+                            </svg>
+                            <span>{{ formatTime(bv.screening?.startTime || bv.booking.bookingDate) }}</span>
+                        </div>
+                        @if (bv.hall) {
+                        <div class="detail-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)"
+                                stroke-width="2">
+                                <path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7" />
+                                <path d="M1 4h22v3H1z" />
+                            </svg>
+                            <span>{{ bv.hall.name }}</span>
+                        </div>
+                        }
+                        <div class="detail-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)"
+                                stroke-width="2">
+                                <rect x="4" y="5" width="16" height="16" rx="1" />
+                                <path d="M4 9h16" />
+                            </svg>
+                            <span>{{ bv?.booking?.seatIds?.length || 0 }} locuri</span>
+                        </div>
+                    </div>
+
+                    <div class="booking-price">
+                        <span class="price-value">{{ bv?.booking?.totalPrice?.toFixed(2) }} MDL</span>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="booking-actions">
+                    <button class="btn btn-primary btn-sm" (click)="downloadPdf(bv)" [disabled]="bv.downloading">
+                        @if (bv.downloading) {
+                        <div class="spinner" style="width:14px;height:14px;border-width:2px"></div>
+                        } @else {
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                            <polyline points="7 10 12 15 17 10" />
+                            <line x1="12" y1="15" x2="12" y2="3" />
+                        </svg>
+                        }
+                        Print
+                    </button>
+                    <button class="btn btn-secondary btn-sm" (click)="viewPdf(bv)" [disabled]="bv.viewing">
+                        @if (bv.viewing) {
+                        <div class="spinner" style="width:14px;height:14px;border-width:2px"></div>
+                        } @else {
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                            <circle cx="12" cy="12" r="3" />
+                        </svg>
+                        }
+                        Vizualizează
+                    </button>
+                </div>
+            </div>
+            }
+        </div>
+        }
+    </div>
+</div>
+
+<div class="pdf-modal" *ngIf="showPdfModal">
+    <div class="pdf-modal" (click)="closePdf()">
+        <div class="pdf-container" (click)="$event.stopPropagation()">
+            <button class="close-btn" (click)="closePdf()">×</button>
+            <iframe [src]="pdfUrl"></iframe>
+        </div>
+    </div>
+</div>

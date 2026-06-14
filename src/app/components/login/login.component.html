@@ -1,0 +1,47 @@
+<div class="page">
+    <div class="auth-container animate-in">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="auth-logo">▶</div>
+                <h1>AUTENTIFICARE</h1>
+                <p>Intră în cont pentru a rezerva bilete</p>
+            </div>
+
+            <div class="auth-form">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input id="email" type="email" class="form-control" [(ngModel)]="email"
+                        placeholder="exemplu@mail.com" (keyup.enter)="login()">
+                </div>
+                <div class="form-group">
+                    <label for="password">Parolă</label>
+                    <input id="password" type="password" class="form-control" [(ngModel)]="password"
+                        placeholder="••••••••" (keyup.enter)="login()">
+                </div>
+
+                @if (error) {
+                <div class="error-msg">{{ error }}</div>
+                }
+
+                <button class="btn btn-primary btn-full" (click)="login()" [disabled]="loading">
+                    @if (loading) {
+                    <div class="spinner" style="width:18px;height:18px;border-width:2px"></div>
+                    } @else {
+                    Intră în cont
+                    }
+                </button>
+            </div>
+
+            <div class="auth-footer">
+                <span>Nu ai cont?</span>
+                <a routerLink="/register">Creează cont</a>
+            </div>
+        </div>
+
+        <div class="auth-decoration">
+            <div class="deco-circle c1"></div>
+            <div class="deco-circle c2"></div>
+            <div class="deco-circle c3"></div>
+        </div>
+    </div>
+</div>

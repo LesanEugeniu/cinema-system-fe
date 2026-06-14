@@ -1,0 +1,89 @@
+<div class="page">
+    <div class="container">
+        <div class="hero-banner animate-in">
+            <h1 class="page-title">PROGRAM</h1>
+            <p class="page-subtitle">Alege o zi pentru a vedea filmele disponibile</p>
+        </div>
+
+        <!-- Day selector -->
+        <div class="day-selector animate-in" style="animation-delay: 0.1s">
+            @for (day of days; track day.label; let i = $index) {
+            <button class="day-btn" [class.active]="selectedDay === i" (click)="selectDay(i)">
+                <span class="day-name">{{ day.label }}</span>
+                <span class="day-date">{{ day.dateShort }}</span>
+            </button>
+            }
+        </div>
+
+        @if (loading) {
+        <div class="loading-container">
+            <div class="spinner"></div>
+        </div>
+        } @else if (screeningsForDay.length === 0) {
+        <div class="empty-state animate-in">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5">
+                <rect x="3" y="4" width="18" height="18" rx="2" />
+                <line x1="16" y1="2" x2="16" y2="6" />
+                <line x1="8" y1="2" x2="8" y2="6" />
+                <line x1="3" y1="10" x2="21" y2="10" />
+            </svg>
+            <h3>Niciun film programat</h3>
+            <p>Nu există proiecții pentru această zi</p>
+        </div>
+        } @else {
+        <div class="schedule-list">
+            @for (item of screeningsForDay; track item.screening.id; let i = $index) {
+            <div class="schedule-card animate-in" [style.animation-delay]="(i * 0.08) + 's'">
+                <a [routerLink]="['/movies', item.movie.id]" class="schedule-poster">
+                    @if (item.movie.imagePath) {
+                    <img [src]="api.getMovieImageUrl(item.movie.imagePath)" [alt]="item.movie.title">
+                    } @else {
+                    <div class="poster-sm-placeholder">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.5">
+                            <rect x="2" y="2" width="20" height="20" rx="2" />
+                        </svg>
+                    </div>
+                    }
+                </a>
+
+                <div class="schedule-info">
+                    <div class="schedule-top">
+                        <a [routerLink]="['/movies', item.movie.id]" class="schedule-title">{{ item.movie.title }}</a>
+                        <div class="schedule-meta">
+                            <span class="badge badge-accent">{{ formatLabels[item.movie.formatType] ||
+                                item.movie.formatType }}</span>
+                            <span>{{ genreLabels[item.movie.genre] || item.movie.genre }}</span>
+                            <span class="dot">·</span>
+                            <span>{{ item.movie.durationMinutes }} min</span>
+                        </div>
+                    </div>
+                    <div class="schedule-time">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)"
+                            stroke-width="2">
+                            <circle cx="12" cy="12" r="10" />
+                            <polyline points="12 6 12 12 16 14" />
+                        </svg>
+                        <span class="time-value">{{ formatTime(item.screening.startTime) }}</span>
+                        <span class="time-sep">→</span>
+                        <span class="time-value">{{ formatTime(item.screening.endTime) }}</span>
+                    </div>
+                </div>
+
+                <div class="schedule-action">
+                    <a [routerLink]="['/booking', item.screening.id]" class="btn btn-primary">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path
+                                d="M15 5v2M9 5v2M4 11h16M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7z" />
+                            <path d="M9 16h6" />
+                        </svg>
+                        Rezervă
+                    </a>
+                </div>
+            </div>
+            }
+        </div>
+        }
+    </div>
+</div>
